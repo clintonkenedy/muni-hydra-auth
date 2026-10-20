@@ -1,0 +1,38 @@
+{
+    "name": "muni/hydra-auth",
+    "description": "Verify Ory Hydra JWT access tokens (JWKS, RS256) in Laravel applications.",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "firebase/php-jwt": "^6.10|^7.0",
+        "illuminate/support": "^11|^12",
+        "illuminate/http": "^11|^12",
+        "illuminate/cache": "^11|^12"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9|^10",
+        "phpunit/phpunit": "^11"
+    },
+    "autoload": {
+        "psr-4": {
+            "Muni\\HydraAuth\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Muni\\HydraAuth\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Muni\\HydraAuth\\HydraAuthServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "config": {
+        "sort-packages": true
+    }
+}
