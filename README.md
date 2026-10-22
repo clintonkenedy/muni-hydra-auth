@@ -60,7 +60,7 @@ Environment variables:
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
 | `HYDRA_ISSUER` | yes | — | Hydra public URL; must match the token `iss` claim exactly. |
-| `HYDRA_AUDIENCE` | yes | — | Accepted when contained in `aud` **or** equal to the `client_id` claim. |
+| `HYDRA_AUDIENCE` | yes | — | One audience or a comma-separated list (e.g. `sistrans,core-spa`); the published config also accepts an array. A user token passes when **any** configured audience is contained in `aud` **or** equals the `client_id` claim. |
 | `HYDRA_JWKS_URL` | no | `{HYDRA_ISSUER}/.well-known/jwks.json` | JWKS endpoint. |
 | `HYDRA_JWKS_CACHE_TTL` | no | `3600` | JWKS cache TTL in seconds. |
 | `HYDRA_LEEWAY` | no | `10` | Clock-skew leeway in seconds for `exp`/`nbf`. |
@@ -84,7 +84,10 @@ Route::middleware('auth.hydra')->get('/api/user', function (Request $request) {
 
 ### `hydra.client:scope[,scope...]` — machine client with scopes
 
-Requires a valid token carrying **all** listed scopes.
+Requires a valid token carrying **all** listed scopes. Signature, issuer and
+`exp`/`nbf` are verified, but the audience check is **not** applied:
+client_credentials tokens usually carry no `aud` claim and are authorized by
+scope instead.
 
 ```php
 Route::middleware('hydra.client:personas.read')->get('/api/personas', ...);

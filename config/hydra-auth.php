@@ -25,8 +25,10 @@ return [
     |--------------------------------------------------------------------------
     | Audience
     |--------------------------------------------------------------------------
-    | Accepted when contained in the token `aud` claim (string or array) OR
-    | when it equals the `client_id` claim.
+    | A single audience, a comma-separated list, or an array of audiences.
+    | A user token is accepted when ANY configured audience is contained in
+    | the token `aud` claim (string or array) OR equals the `client_id`
+    | claim. The `hydra.client` middleware does NOT apply this check.
     */
     'audience' => env('HYDRA_AUDIENCE', ''),
 

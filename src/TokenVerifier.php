@@ -14,19 +14,31 @@ use Muni\HydraAuth\Exceptions\JwksUnavailableException;
  */
 class TokenVerifier
 {
+    /** @var list<string> */
+    private readonly array $audiences;
+
+    /**
+     * @param string|array<int, string> $audience Single audience, comma-separated
+     *                                            list, or array of audiences.
+     */
     public function __construct(
         private readonly JwksCache $jwksCache,
         private readonly string $issuer,
-        private readonly string $audience,
+        string|array $audience,
         private readonly int $leeway = 10,
     ) {
+        $this->audiences = self::normalizeAudiences($audience);
     }
 
     /**
+     * Verify signature, issuer and time-based claims. When $checkAudience is
+     * true (default) the audience check is applied as well; pass false for
+     * client-credentials flows where authorization is scope-based.
+     *
      * @throws InvalidTokenException    401 semantics
      * @throws JwksUnavailableException 503 semantics
      */
-    public function verify(string $jwt): HydraPrincipal
+    public function verify(string $jwt, bool $checkAudience = true): HydraPrincipal
     {
         $kid = $this->extractKid($jwt);
 
@@ -56,7 +68,7 @@ class TokenVerifier
             throw new InvalidTokenException('Token issuer mismatch');
         }
 
-        if (! $this->audienceMatches($claims)) {
+        if ($checkAudience && ! $this->audienceMatches($claims)) {
             throw new InvalidTokenException('Token audience mismatch');
         }
 
@@ -64,7 +76,7 @@ class TokenVerifier
     }
 
     /**
-     * Accept when the configured audience is contained in `aud` (string or
+     * Accept when ANY configured audience is contained in `aud` (string or
      * array) OR equals the `client_id` claim.
      *
      * @param array<string, mixed> $claims
@@ -74,11 +86,39 @@ class TokenVerifier
         $aud = $claims['aud'] ?? [];
         $aud = is_array($aud) ? $aud : [$aud];
 
-        if (in_array($this->audience, $aud, true)) {
-            return true;
+        foreach ($this->audiences as $audience) {
+            if (in_array($audience, $aud, true)) {
+                return true;
+            }
+
+            if (($claims['client_id'] ?? null) === $audience) {
+                return true;
+            }
         }
 
-        return ($claims['client_id'] ?? null) === $this->audience;
+        return false;
+    }
+
+    /**
+     * @param string|array<int, string> $audience
+     *
+     * @return list<string>
+     */
+    private static function normalizeAudiences(string|array $audience): array
+    {
+        $values = is_array($audience) ? $audience : explode(',', $audience);
+
+        $normalized = [];
+
+        foreach ($values as $value) {
+            $value = trim((string) $value);
+
+            if ($value !== '') {
+                $normalized[] = $value;
+            }
+        }
+
+        return $normalized;
     }
 
     private function extractKid(string $jwt): ?string

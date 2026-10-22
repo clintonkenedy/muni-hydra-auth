@@ -29,10 +29,12 @@ class HydraAuthServiceProvider extends ServiceProvider
         $this->app->singleton(TokenVerifier::class, function (Application $app): TokenVerifier {
             $config = $app['config']['hydra-auth'];
 
+            $audience = $config['audience'] ?? '';
+
             return new TokenVerifier(
                 jwksCache: $app->make(JwksCache::class),
                 issuer: (string) $config['issuer'],
-                audience: (string) $config['audience'],
+                audience: is_array($audience) ? $audience : (string) $audience,
                 leeway: (int) $config['leeway'],
             );
         });

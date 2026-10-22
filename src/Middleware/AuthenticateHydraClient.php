@@ -17,6 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Requires a valid Hydra access token carrying every scope passed as a
  * middleware parameter, e.g. `hydra.client:personas.read`.
+ *
+ * The audience check is NOT applied here: client_credentials tokens are
+ * authorized by scope and typically carry no `aud` claim.
  */
 class AuthenticateHydraClient
 {
@@ -35,7 +38,7 @@ class AuthenticateHydraClient
         }
 
         try {
-            $principal = $this->verifier->verify($token);
+            $principal = $this->verifier->verify($token, checkAudience: false);
         } catch (JwksUnavailableException $e) {
             Log::info('hydra-auth: JWKS unavailable: '.$e->getMessage());
 
