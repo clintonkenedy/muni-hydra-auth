@@ -17,7 +17,7 @@ Add a VCS repository to your application's `composer.json`:
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github.com:MuniPuno/muni-hydra-auth.git"
+            "url": "https://github.com/clintonkenedy/muni-hydra-auth.git"
         }
     ]
 }
